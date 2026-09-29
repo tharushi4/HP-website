@@ -1,0 +1,79 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Destination {
+  id              String   @id @default(uuid())
+  name            String
+  slug            String   @unique
+  country         String
+  continent       String
+  description     String
+  heroImage       String
+  gallery         String[]
+  bestTimeToVisit String
+  currency        String
+  featured        Boolean  @default(false)
+  tours           Tour[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Tour {
+  id             String      @id @default(uuid())
+  title          String
+  slug           String      @unique
+  destinationId  String
+  destination    Destination @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+  durationDays   Int
+  price          Float
+  discountPrice  Float?
+  difficulty     String      // "Easy", "Moderate", "Challenging", "Strenuous"
+  groupSize      Int
+  category       String      // "Adventure", "Luxury", "Cultural", "Nature", "Wellness"
+  highlights     String[]
+  itinerary      Json        // Array of { day: number, title: string, description: string, meals: string, hotel: string }
+  inclusions     String[]
+  exclusions     String[]
+  rating         Float       @default(5.0)
+  reviewCount    Int         @default(0)
+  images         String[]
+  featured       Boolean     @default(false)
+  bookings       Booking[]
+  reviews        Review[]
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+}
+
+model Booking {
+  id              String   @id @default(uuid())
+  bookingCode     String   @unique
+  tourId          String
+  tour            Tour     @relation(fields: [tourId], references: [id], onDelete: Cascade)
+  customerName    String
+  customerEmail   String
+  customerPhone   String
+  travelDate      DateTime
+  guestsCount     Int
+  totalAmount     Float
+  status          String   @default("CONFIRMED") // "CONFIRMED", "PENDING", "COMPLETED", "CANCELLED"
+  specialRequests String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  tourId    String
+  tour      Tour     @relation(fields: [tourId], references: [id], onDelete: Cascade)
+  author    String
+  rating    Int
+  comment   String
+  location  String?
+  createdAt DateTime @default(now())
+}
